@@ -45,7 +45,8 @@ Verbose é um serviço local diário de vocabulário em português brasileiro. E
 
 - Criar branches somente com os prefixos `feature/` (funcionalidade) ou `fix/` (correção), em minúsculas e usando hífens na descrição.
 - Usar `feat:` para commits de funcionalidade e `fix:` para commits de correção.
-- Manter `main` funcional. Só integrar uma branch quando a etapa estiver concluída e validada.
+- Usar `development` como integração da V1: branches de funcionalidade ou correção partem dela e retornam a ela por pull request quando uma entrega coerente estiver concluída e validada.
+- Manter `main` funcional e reservada à integração da V1 completa e validada.
 - Não criar commits automaticamente. Ao concluir uma etapa, sugerir uma mensagem de commit e aguardar decisão do usuário.
 - Verificar o estado do Git antes de sugerir comandos potencialmente destrutivos.
 - Não usar `git add .`; adicionar arquivos explicitamente e revisar o conteúdo preparado antes de cada commit.
