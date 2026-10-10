@@ -8,7 +8,21 @@ O escopo da primeira versão é local: agendamento diário, RabbitMQ, Ollama, pe
 
 ## Estado atual
 
-A solução `Verbose.sln` e o projeto `Verbose.Worker` foram criados. O Worker possui somente `ServicoInicial`, um serviço hospedado que registra sua inicialização e permanece ativo até receber o cancelamento de `Ctrl+C`.
+A solução `Verbose.sln`, o projeto `Verbose.Worker` e a biblioteca `Verbose.Domain` foram criados. O Worker possui somente `ServicoInicial`, um serviço hospedado que registra sua inicialização e permanece ativo até receber o cancelamento de `Ctrl+C`.
+
+`Verbose.Domain` contém `PalavraDoDia` e `RegistroPalavraDoDia`. `PalavraDoDia` representa palavra, definição e exemplo já validados; `RegistroPalavraDoDia` associa esse conteúdo a uma data de referência e controla a transição de `PendenteEnvio` para `Enviada`. Ambos permanecem independentes de arquivo, RabbitMQ, Ollama, SMTP ou Worker. A validação atual exige campos não vazios, remove espaços nas extremidades e limita os tamanhos a 60, 400 e 500 caracteres, respectivamente.
+
+`Verbose.Application` contém a porta de saída `IRepositorioDePalavrasDoDia`, com operações específicas para buscar um registro pela data, verificar se uma palavra já foi usada e salvar um registro. `Verbose.Infrastructure` contém `RepositorioDePalavrasEmJson`, implementação dessa porta responsável exclusivamente por converter registros de domínio para o formato de `data/used-words.json` e vice-versa. Arquivo ausente equivale a uma lista vazia; JSON inválido gera uma falha explícita. A gravação usa arquivo temporário no mesmo diretório e só então substitui o destino, reduzindo o risco de corromper o arquivo existente em uma falha durante a escrita.
+
+O primeiro caso de uso é `RegistrarPalavraDoDia`. Ele verifica data e palavra antes de persistir um registro pendente e devolve um resultado explícito para data já utilizada ou palavra já utilizada. Essas situações são resultados esperados de negócio; falhas de arquivo continuam sendo exceções técnicas. `Verbose.Application.Testes` usa um repositório em memória exclusivamente nos testes para validar o caso de uso sem depender de JSON.
+
+O Worker compõe as dependências: lê `Persistencia:DiretorioDados` de `appsettings.json` por meio de `OpcoesDePersistencia`, valida que o valor está preenchido, resolve caminhos relativos a partir da pasta de conteúdo do Worker e registra `RepositorioDePalavrasEmJson` como a implementação de `IRepositorioDePalavrasDoDia`. O valor padrão `../data` aponta para `data/` na raiz do repositório. Nenhum caso de uso é executado automaticamente na inicialização.
+
+Para validação local, `ServicoDeExecucaoManual` pode ser ativado apenas em `Development` com a seção `ExecucaoManual` de `appsettings.Development.json`, arquivo ignorado pelo Git. O arquivo versionado `appsettings.Manual.example.json` demonstra o formato. Quando ativo, o serviço executa `RegistrarPalavraDoDia` uma única vez, registra o resultado no log e encerra o host. Essa ferramenta não substitui o fluxo futuro de RabbitMQ e Ollama.
+
+A execução manual foi validada localmente com variáveis de ambiente temporárias: a primeira execução criou `data/used-words.json` com um registro `PendenteEnvio`; uma segunda execução com a mesma data retornou `DataJaUtilizada` sem acrescentar outro registro. A suíte atual possui seis testes automatizados, executados com `dotnet test Verbose.sln`.
+
+`Verbose.Infrastructure.Testes` valida a persistência em diretórios temporários, sem criar ou alterar o arquivo de dados real. Os cenários atuais cobrem arquivo ausente, gravação e recuperação de um registro enviado, e JSON inválido. Os testes são executados com `dotnet test Verbose.sln`.
 
 O projeto compila com `dotnet build Verbose.sln` e inicia com `dotnet run --project Verbose.Worker`. Não há RabbitMQ, Ollama, persistência JSON, e-mail ou configuração de segredos implementados ainda.
 
@@ -27,7 +41,7 @@ O ambiente local necessário para a V1 foi preparado e validado: .NET, RabbitMQ,
 - A V1 será um monólito organizado, sem Docker, SQL, Redis, microserviços, nuvem ou APIs externas de IA.
 - Segredos de desenvolvimento ficarão em .NET User Secrets; configurações de execução futuras usarão variáveis de ambiente ou arquivos locais ignorados pelo Git.
 - Dados gerados em `data/`, incluindo `used-words.json`, não serão versionados.
-- Fluxo Git: branches usam `feature/` ou `fix/`; commits usam `feat:` ou `fix:`; `main` recebe somente etapas concluídas e validadas.
+- Fluxo Git: branches usam `feature/` ou `fix/`; commits usam `feat:` ou `fix:`. As entregas coerentes da V1 são integradas em `development`; `main` recebe somente a V1 completa e validada.
 
 ## Arquitetura aprovada para implementação gradual
 
@@ -64,4 +78,4 @@ O critério “relativamente incomum” não será mensurado automaticamente com
 
 ## Próxima etapa
 
-Criar `Verbose.Domain` com o primeiro conceito de domínio concreto: a palavra do dia e suas validações básicas. A etapa não incluirá persistência, RabbitMQ, Ollama ou e-mail.
+Concluir a entrega de persistência com revisão, commit e integração em `development`. A próxima funcionalidade planejada é introduzir RabbitMQ gradualmente, começando pela conexão local e pelos conceitos de fila, mensagem e publicação.

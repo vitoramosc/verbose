@@ -10,4 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Verbose.Application\Verbose.Application.csproj" />
+    <ProjectReference Include="..\Verbose.Infrastructure\Verbose.Infrastructure.csproj" />
+  </ItemGroup>
 </Project>
