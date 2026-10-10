@@ -38,6 +38,23 @@ ScaffoldingReadMe.txt
 
 # dotenv environment variables file
 .env
+.env.*
+!.env.example
+
+# Configurações locais e segredos
+appsettings.Local.json
+appsettings.Development.json
+secrets.json
+*.secrets.json
+
+# Dados gerados localmente pela aplicação
+/data/*
+!/data/.gitkeep
+
+# Preferências locais de IDE
+.vs/
+*.user
+*.suo
 
 # Others
 ~$*
