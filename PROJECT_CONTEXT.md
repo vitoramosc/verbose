@@ -8,7 +8,9 @@ O escopo da primeira versão é local: agendamento diário, RabbitMQ, Ollama, pe
 
 ## Estado atual
 
-Não existe solução .NET, projeto, código de aplicação ou configuração de e-mail no repositório. O repositório continha apenas `README.md` antes da criação desta documentação.
+A solução `Verbose.sln` e o projeto `Verbose.Worker` foram criados. O Worker possui somente `ServicoInicial`, um serviço hospedado que registra sua inicialização e permanece ativo até receber o cancelamento de `Ctrl+C`.
+
+O projeto compila com `dotnet build Verbose.sln` e inicia com `dotnet run --project Verbose.Worker`. Não há RabbitMQ, Ollama, persistência JSON, e-mail ou configuração de segredos implementados ainda.
 
 O ambiente local necessário para a V1 foi preparado e validado: .NET, RabbitMQ, Erlang, driver NVIDIA e Ollama estão operacionais. O modelo local `qwen3:8b` foi testado com execução integral na GPU. Detalhes de sistema operacional, hardware, contas e instalações locais não são versionados neste repositório público.
 
@@ -62,4 +64,4 @@ O critério “relativamente incomum” não será mensurado automaticamente com
 
 ## Próxima etapa
 
-Criar a solução .NET mínima e um único Worker que inicia e registra um log no terminal. Esta etapa não incluirá RabbitMQ, JSON, Ollama ou e-mail.
+Criar `Verbose.Domain` com o primeiro conceito de domínio concreto: a palavra do dia e suas validações básicas. A etapa não incluirá persistência, RabbitMQ, Ollama ou e-mail.
