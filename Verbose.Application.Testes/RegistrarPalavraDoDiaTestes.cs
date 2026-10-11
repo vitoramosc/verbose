@@ -91,11 +91,34 @@ public sealed class RegistrarPalavraDoDiaTestes
             return Task.FromResult(palavraJaFoiUsada);
         }
 
+        public Task<IReadOnlyCollection<string>> ObterPalavrasUsadasAsync(
+            CancellationToken tokenCancelamento = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<string>>(
+                registros.Select(registro => registro.PalavraDoDia.Palavra).ToArray());
+        }
+
         public Task SalvarAsync(
             RegistroPalavraDoDia registro,
             CancellationToken tokenCancelamento = default)
         {
             registros.Add(registro);
+
+            return Task.CompletedTask;
+        }
+
+        public Task AtualizarAsync(
+            RegistroPalavraDoDia registro,
+            CancellationToken tokenCancelamento = default)
+        {
+            var indice = registros.FindIndex(item => item.DataReferencia == registro.DataReferencia);
+
+            if (indice < 0)
+            {
+                throw new InvalidOperationException("Registro não encontrado.");
+            }
+
+            registros[indice] = registro;
 
             return Task.CompletedTask;
         }

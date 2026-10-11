@@ -5,6 +5,16 @@
     <ProjectReference Include="..\Verbose.Application\Verbose.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageReference Include="MailKit" Version="4.18.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Email/Recursos/palavra_do_dia_template.html" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

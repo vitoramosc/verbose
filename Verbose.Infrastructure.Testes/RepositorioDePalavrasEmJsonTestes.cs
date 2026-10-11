@@ -63,6 +63,26 @@ public sealed class RepositorioDePalavrasEmJsonTestes
         Assert.Equal("O arquivo de palavras usadas contém JSON inválido.", excecao.Message);
     }
 
+    [Fact]
+    public async Task AtualizarAsync_QuandoRegistroExiste_PersisteNovoStatus()
+    {
+        using var diretorioTemporario = new DiretorioTemporario();
+        IRepositorioDePalavrasDoDia repositorio =
+            new RepositorioDePalavrasEmJson(diretorioTemporario.Caminho);
+        var registro = new RegistroPalavraDoDia(
+            new DateOnly(2026, 10, 10),
+            new PalavraDoDia("irascível", "Definição válida.", "Exemplo válido."));
+        await repositorio.SalvarAsync(registro);
+
+        registro.MarcarComoEnviada();
+        await repositorio.AtualizarAsync(registro);
+
+        var registroAtualizado = await repositorio.ObterPorDataAsync(registro.DataReferencia);
+
+        Assert.NotNull(registroAtualizado);
+        Assert.Equal(StatusDeEnvio.Enviada, registroAtualizado.StatusDeEnvio);
+    }
+
     private sealed class DiretorioTemporario : IDisposable
     {
         public DiretorioTemporario()

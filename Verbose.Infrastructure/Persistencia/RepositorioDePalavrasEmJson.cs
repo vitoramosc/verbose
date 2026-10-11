@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Verbose.Application.PortasDeSaida;
@@ -13,6 +14,7 @@ public sealed class RepositorioDePalavrasEmJson : IRepositorioDePalavrasDoDia
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         Converters =
         {
             new JsonStringEnumConverter<StatusDeEnvio>(namingPolicy: null, allowIntegerValues: false)
@@ -58,6 +60,14 @@ public sealed class RepositorioDePalavrasEmJson : IRepositorioDePalavrasDoDia
             StringComparison.OrdinalIgnoreCase));
     }
 
+    public async Task<IReadOnlyCollection<string>> ObterPalavrasUsadasAsync(
+        CancellationToken tokenCancelamento = default)
+    {
+        var registros = await LerTodosAsync(tokenCancelamento);
+
+        return registros.Select(registro => registro.PalavraDoDia.Palavra).ToArray();
+    }
+
     public async Task SalvarAsync(
         RegistroPalavraDoDia registro,
         CancellationToken tokenCancelamento = default)
@@ -67,6 +77,25 @@ public sealed class RepositorioDePalavrasEmJson : IRepositorioDePalavrasDoDia
         var registros = (await LerTodosAsync(tokenCancelamento)).ToList();
         registros.Add(registro);
 
+        await SalvarTodosAsync(registros, tokenCancelamento);
+    }
+
+    public async Task AtualizarAsync(
+        RegistroPalavraDoDia registro,
+        CancellationToken tokenCancelamento = default)
+    {
+        ArgumentNullException.ThrowIfNull(registro);
+
+        var registros = (await LerTodosAsync(tokenCancelamento)).ToList();
+        var indice = registros.FindIndex(item => item.DataReferencia == registro.DataReferencia);
+
+        if (indice < 0)
+        {
+            throw new InvalidOperationException(
+                $"Não existe registro para a data {registro.DataReferencia:yyyy-MM-dd}.");
+        }
+
+        registros[indice] = registro;
         await SalvarTodosAsync(registros, tokenCancelamento);
     }
 
