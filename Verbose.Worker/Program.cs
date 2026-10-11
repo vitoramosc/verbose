@@ -42,7 +42,9 @@ builder.Services.Configure<OpcoesDePublicacaoManual>(
 builder.Services
     .AddOptions<OpcoesDeAgendamento>()
     .Bind(builder.Configuration.GetSection(OpcoesDeAgendamento.NomeSecao))
-    .Validate(opcoes => opcoes.TentarObterHorario(out _), "Agendamento:Horario deve usar o formato HH:mm.")
+    .Validate(
+        opcoes => opcoes.ExecutarImediatamente || opcoes.TentarObterHorario(out _),
+        "Agendamento:Horario deve usar o formato HH:mm ou o valor agora em Development.")
     .Validate(
         opcoes => TimeZoneInfo.TryFindSystemTimeZoneById(opcoes.FusoHorario, out _),
         "Agendamento:FusoHorario deve ser um identificador de fuso horário válido.")
@@ -108,6 +110,15 @@ builder.Services.AddSingleton<IGeradorDePalavraDoDia>(provedorDeServicos =>
 
     return new GeradorDePalavraDoDiaNoOllama(clienteHttp, opcoes);
 });
+builder.Services.AddSingleton<IRevisorEditorialDePalavraDoDia>(provedorDeServicos =>
+{
+    var clienteHttp = provedorDeServicos.GetRequiredService<HttpClient>();
+    var opcoes = provedorDeServicos.GetRequiredService<IOptions<OpcoesDoOllama>>().Value;
+    var logger = provedorDeServicos
+        .GetRequiredService<ILogger<RevisorEditorialDePalavraDoDiaNoOllama>>();
+
+    return new RevisorEditorialDePalavraDoDiaNoOllama(clienteHttp, opcoes, logger);
+});
 builder.Services.AddSingleton<GeradorDeHtmlDaPalavraDoDia>();
 builder.Services.AddSingleton<IEmailService>(provedorDeServicos =>
 {
@@ -129,6 +140,7 @@ builder.Services.AddSingleton(provedorDeServicos =>
 });
 
 builder.Services.AddTransient<RegistrarPalavraDoDia>();
+builder.Services.AddTransient<ValidadorEditorialDaPalavraDoDia>();
 builder.Services.AddTransient<GerarERegistrarPalavraDoDia>();
 builder.Services.AddTransient<NotificacaoService>();
 builder.Services.AddSingleton(TimeProvider.System);

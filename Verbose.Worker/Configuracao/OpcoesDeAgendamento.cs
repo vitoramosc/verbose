@@ -10,6 +10,11 @@ public sealed class OpcoesDeAgendamento
 
     public string FusoHorario { get; init; } = string.Empty;
 
+    public bool ExecutarImediatamente => string.Equals(
+        Horario,
+        "agora",
+        StringComparison.OrdinalIgnoreCase);
+
     public bool TentarObterHorario(out TimeOnly horario)
     {
         return TimeOnly.TryParseExact(

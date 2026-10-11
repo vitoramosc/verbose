@@ -47,6 +47,9 @@ appsettings.Development.json
 secrets.json
 *.secrets.json
 
+# Contexto local de continuidade
+PROJECT_CONTEXT.md
+
 # Dados gerados localmente pela aplicação
 /data/*
 !/data/.gitkeep

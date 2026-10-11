@@ -50,6 +50,6 @@ Verbose é um serviço local diário de vocabulário em português brasileiro. E
 - Não criar commits automaticamente. Ao concluir uma etapa, sugerir uma mensagem de commit e aguardar decisão do usuário.
 - Verificar o estado do Git antes de sugerir comandos potencialmente destrutivos.
 - Não usar `git add .`; adicionar arquivos explicitamente e revisar o conteúdo preparado antes de cada commit.
-- Ler `AGENTS.md` e `PROJECT_CONTEXT.md` antes de começar uma nova etapa.
-- Atualizar `PROJECT_CONTEXT.md` quando o estado real, decisões relevantes ou a próxima etapa mudarem.
+- Ler `AGENTS.md` e `PROJECT_CONTEXT.md` antes de começar uma nova etapa, quando o contexto local existir.
+- Manter `PROJECT_CONTEXT.md` somente como documentação local, fora do Git. Atualizá-lo quando o estado real, decisões relevantes ou a próxima etapa mudarem.
 - Atualizar este arquivo somente quando as regras permanentes de trabalho mudarem.
