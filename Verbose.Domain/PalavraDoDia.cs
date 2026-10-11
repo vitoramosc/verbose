@@ -5,6 +5,7 @@ public sealed class PalavraDoDia
     public PalavraDoDia(string palavra, string definicao, string exemplo)
     {
         Palavra = ValidarCampo(palavra, nameof(palavra), 60);
+        ValidarPalavra(Palavra);
         Definicao = ValidarCampo(definicao, nameof(definicao), 400);
         Exemplo = ValidarCampo(exemplo, nameof(exemplo), 500);
     }
@@ -32,5 +33,15 @@ public sealed class PalavraDoDia
         }
 
         return valorNormalizado;
+    }
+
+    private static void ValidarPalavra(string palavra)
+    {
+        if (palavra.Any(char.IsWhiteSpace) || palavra.Any(caractere => !char.IsLetter(caractere) && caractere != '-'))
+        {
+            throw new ArgumentException(
+                "A palavra deve ser um único lema formado apenas por letras ou hífen.",
+                nameof(palavra));
+        }
     }
 }
