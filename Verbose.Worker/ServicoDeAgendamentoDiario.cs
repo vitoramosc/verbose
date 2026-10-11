@@ -6,6 +6,7 @@ using Verbose.Worker.Configuracao;
 namespace Verbose.Worker;
 
 public sealed class ServicoDeAgendamentoDiario(
+    IHostEnvironment ambiente,
     IPublicadorDeSolicitacaoDePalavraDoDia publicador,
     IOptions<OpcoesDeAgendamento> opcoes,
     TimeProvider relogio,
@@ -14,8 +15,28 @@ public sealed class ServicoDeAgendamentoDiario(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var configuracao = opcoes.Value;
-        configuracao.TentarObterHorario(out var horario);
         var fusoHorario = TimeZoneInfo.FindSystemTimeZoneById(configuracao.FusoHorario);
+
+        if (configuracao.ExecutarImediatamente)
+        {
+            if (!ambiente.IsDevelopment())
+            {
+                throw new InvalidOperationException(
+                    "Agendamento:Horario=agora só pode ser usado no ambiente Development.");
+            }
+
+            var agoraNoFuso = TimeZoneInfo.ConvertTime(relogio.GetUtcNow(), fusoHorario);
+            var dataReferencia = DateOnly.FromDateTime(agoraNoFuso.DateTime);
+
+            logger.LogInformation(
+                "Modo de desenvolvimento ativo. Publicando imediatamente a solicitação para {DataReferencia}.",
+                dataReferencia);
+            await PublicarAsync(dataReferencia, stoppingToken);
+            await AguardarEncerramentoAsync(stoppingToken);
+            return;
+        }
+
+        configuracao.TentarObterHorario(out var horario);
         var primeiraExecucao = true;
 
         while (!stoppingToken.IsCancellationRequested)
@@ -59,6 +80,17 @@ public sealed class ServicoDeAgendamentoDiario(
         logger.LogInformation(
             "Solicitação diária publicada para a data de referência {DataReferencia}.",
             dataReferencia);
+    }
+
+    private static async Task AguardarEncerramentoAsync(CancellationToken tokenCancelamento)
+    {
+        try
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, tokenCancelamento);
+        }
+        catch (OperationCanceledException) when (tokenCancelamento.IsCancellationRequested)
+        {
+        }
     }
 
     private static DateTimeOffset CriarDataHoraNoFuso(
