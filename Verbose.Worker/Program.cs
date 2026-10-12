@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Verbose.Application.CasosDeUso;
 using Verbose.Application.PortasDeSaida;
@@ -9,7 +11,7 @@ using Verbose.Infrastructure.Persistencia;
 using Verbose.Worker;
 using Verbose.Worker.Configuracao;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddOptions<OpcoesDePersistencia>()
@@ -17,6 +19,51 @@ builder.Services
     .Validate(
         opcoes => !string.IsNullOrWhiteSpace(opcoes.DiretorioDados),
         "A configuração Persistencia:DiretorioDados deve ser informada.")
+    .ValidateOnStart();
+
+builder.Services.AddRateLimiter(opcoes =>
+{
+    opcoes.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    opcoes.AddPolicy("inscricoes", contexto =>
+    {
+        var chaveDaParticao = contexto.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            chaveDaParticao,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+    opcoes.AddPolicy("confirmacoes", contexto =>
+    {
+        var chaveDaParticao = contexto.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            chaveDaParticao,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+});
+builder.Services
+    .AddOptions<OpcoesDeInscricao>()
+    .Bind(builder.Configuration.GetSection(OpcoesDeInscricao.NomeSecao))
+    .Validate(
+        opcoes => Uri.TryCreate(opcoes.UrlBaseDeConfirmacao, UriKind.Absolute, out var url) &&
+            (string.Equals(url.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)),
+        "Inscricao:UrlBaseDeConfirmacao deve ser uma URL HTTP ou HTTPS absoluta.")
+    .Validate(
+        opcoes => opcoes.HorasDeValidadeDaConfirmacao is > 0 and <= 168,
+        "Inscricao:HorasDeValidadeDaConfirmacao deve estar entre 1 e 168.")
     .ValidateOnStart();
 builder.Services
     .AddOptions<OpcoesDoOllama>()
@@ -32,7 +79,6 @@ builder.Services
     .Validate(opcoes => opcoes.Porta is > 0 and <= 65535, "Email:Porta deve ser válida.")
     .Validate(opcoes => !string.IsNullOrWhiteSpace(opcoes.Remetente), "Email:Remetente deve ser informado.")
     .Validate(opcoes => !string.IsNullOrWhiteSpace(opcoes.SenhaDeAplicativo), "Email:SenhaDeAplicativo deve ser informada.")
-    .Validate(opcoes => !string.IsNullOrWhiteSpace(opcoes.Destinatario), "Email:Destinatario deve ser informado.")
     .ValidateOnStart();
 
 builder.Services.Configure<OpcoesDeExecucaoManual>(
@@ -82,6 +128,28 @@ builder.Services.AddSingleton<IRepositorioDePalavrasDoDia>(provedorDeServicos =>
 
     return new RepositorioDePalavrasEmJson(Path.GetFullPath(diretorioDados));
 });
+builder.Services.AddSingleton<IRepositorioDeDestinatarios>(provedorDeServicos =>
+{
+    var opcoes = provedorDeServicos
+        .GetRequiredService<IOptions<OpcoesDePersistencia>>()
+        .Value;
+    var diretorioDados = Path.IsPathFullyQualified(opcoes.DiretorioDados)
+        ? opcoes.DiretorioDados
+        : Path.Combine(diretorioDeConteudo, opcoes.DiretorioDados);
+
+    return new RepositorioDeDestinatariosEmJson(Path.GetFullPath(diretorioDados));
+});
+builder.Services.AddSingleton<IRepositorioDeEnviosDaPalavraDoDia>(provedorDeServicos =>
+{
+    var opcoes = provedorDeServicos
+        .GetRequiredService<IOptions<OpcoesDePersistencia>>()
+        .Value;
+    var diretorioDados = Path.IsPathFullyQualified(opcoes.DiretorioDados)
+        ? opcoes.DiretorioDados
+        : Path.Combine(diretorioDeConteudo, opcoes.DiretorioDados);
+
+    return new RepositorioDeEnviosDaPalavraDoDiaEmJson(Path.GetFullPath(diretorioDados));
+});
 
 builder.Services.AddSingleton(provedorDeServicos =>
 {
@@ -120,12 +188,15 @@ builder.Services.AddSingleton<IRevisorEditorialDePalavraDoDia>(provedorDeServico
     return new RevisorEditorialDePalavraDoDiaNoOllama(clienteHttp, opcoes, logger);
 });
 builder.Services.AddSingleton<GeradorDeHtmlDaPalavraDoDia>();
+builder.Services.AddSingleton<GeradorDeHtmlDeConfirmacaoDeInscricao>();
 builder.Services.AddSingleton<IEmailService>(provedorDeServicos =>
 {
     var opcoes = provedorDeServicos.GetRequiredService<IOptions<OpcoesDeEmail>>().Value;
     var geradorDeHtml = provedorDeServicos.GetRequiredService<GeradorDeHtmlDaPalavraDoDia>();
+    var geradorDeHtmlDeConfirmacao = provedorDeServicos
+        .GetRequiredService<GeradorDeHtmlDeConfirmacaoDeInscricao>();
 
-    return new EmailServiceSmtp(opcoes, geradorDeHtml);
+    return new EmailServiceSmtp(opcoes, geradorDeHtml, geradorDeHtmlDeConfirmacao);
 });
 builder.Services.AddSingleton(provedorDeServicos =>
 {
@@ -140,9 +211,32 @@ builder.Services.AddSingleton(provedorDeServicos =>
 });
 
 builder.Services.AddTransient<RegistrarPalavraDoDia>();
+builder.Services.AddTransient<CadastrarDestinatario>(provedorDeServicos =>
+{
+    var opcoes = provedorDeServicos.GetRequiredService<IOptions<OpcoesDeInscricao>>().Value;
+
+    return new CadastrarDestinatario(
+        provedorDeServicos.GetRequiredService<IRepositorioDeDestinatarios>(),
+        provedorDeServicos.GetRequiredService<IEmailService>(),
+        provedorDeServicos.GetRequiredService<TimeProvider>(),
+        new Uri(opcoes.UrlBaseDeConfirmacao, UriKind.Absolute),
+        TimeSpan.FromHours(opcoes.HorasDeValidadeDaConfirmacao));
+});
+builder.Services.AddTransient<ConfirmarInscricao>();
+builder.Services.AddTransient<CancelarInscricao>();
 builder.Services.AddTransient<ValidadorEditorialDaPalavraDoDia>();
 builder.Services.AddTransient<GerarERegistrarPalavraDoDia>();
-builder.Services.AddTransient<NotificacaoService>();
+builder.Services.AddTransient<NotificacaoService>(provedorDeServicos =>
+{
+    var opcoes = provedorDeServicos.GetRequiredService<IOptions<OpcoesDeInscricao>>().Value;
+
+    return new NotificacaoService(
+        provedorDeServicos.GetRequiredService<IRepositorioDePalavrasDoDia>(),
+        provedorDeServicos.GetRequiredService<IRepositorioDeDestinatarios>(),
+        provedorDeServicos.GetRequiredService<IRepositorioDeEnviosDaPalavraDoDia>(),
+        provedorDeServicos.GetRequiredService<IEmailService>(),
+        new Uri(opcoes.UrlBaseDeConfirmacao, UriKind.Absolute));
+});
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHostedService<ServicoDePublicacaoManual>();
 builder.Services.AddHostedService<ServicoDeAgendamentoDiario>();
@@ -150,5 +244,9 @@ builder.Services.AddHostedService<ServicoDeConsumoDeSolicitacoes>();
 builder.Services.AddHostedService<ServicoDeExecucaoManual>();
 builder.Services.AddHostedService<ServicoInicial>();
 
-var host = builder.Build();
-host.Run();
+var aplicacao = builder.Build();
+aplicacao.UseDefaultFiles();
+aplicacao.UseStaticFiles();
+aplicacao.UseRateLimiter();
+aplicacao.MapearEndpointsDeInscricao();
+aplicacao.Run();

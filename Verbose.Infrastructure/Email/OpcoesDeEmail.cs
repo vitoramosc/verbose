@@ -12,5 +12,4 @@ public sealed class OpcoesDeEmail
 
     public string SenhaDeAplicativo { get; init; } = string.Empty;
 
-    public string Destinatario { get; init; } = string.Empty;
 }

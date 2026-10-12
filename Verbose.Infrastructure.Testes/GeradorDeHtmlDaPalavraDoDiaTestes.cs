@@ -8,7 +8,7 @@ public sealed class GeradorDeHtmlDaPalavraDoDiaTestes
     [Fact]
     public void Gerar_QuandoConteudoTemCaracteresEspeciais_CodificaHtmlESubstituiMarcadores()
     {
-        const string template = "{{PALAVRA}}|{{DEFINICAO}}|{{EXEMPLO}}|{{data}}";
+        const string template = "{{PALAVRA}}|{{DEFINICAO}}|{{EXEMPLO}}|{{data}}|{{LINK_CANCELAMENTO}}";
         var gerador = new GeradorDeHtmlDaPalavraDoDia(template);
         var registro = new RegistroPalavraDoDia(
             new DateOnly(2026, 10, 14),
@@ -17,10 +17,10 @@ public sealed class GeradorDeHtmlDaPalavraDoDiaTestes
                 "Adequado & confiável <teste>.",
                 "Ele disse: \"idôneo\"."));
 
-        var html = gerador.Gerar(registro);
+        var html = gerador.Gerar(registro, new Uri("https://exemplo.test/cancelar?token=a&b"));
 
         Assert.Equal(
-            "id&#244;neo|Adequado &amp; confi&#225;vel &lt;teste&gt;.|Ele disse: &quot;id&#244;neo&quot;.|14 de outubro de 2026",
+            "id&#244;neo|Adequado &amp; confi&#225;vel &lt;teste&gt;.|Ele disse: &quot;id&#244;neo&quot;.|14 de outubro de 2026|https://exemplo.test/cancelar?token=a&amp;b",
             html);
     }
 }

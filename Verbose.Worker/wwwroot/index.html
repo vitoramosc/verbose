@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Uma palavra nova por dia, com significado e exemplo de uso. Conheça o Verbose e amplie seu repertório todos os dias, às 7h.">
+  <meta name="theme-color" content="#F3F0E7">
+  <title>Verbose — Uma palavra nova. Todo dia, às 7h.</title>
+  <style>
+    :root { --accent:#EBD16A; --background:#F3F0E7; --surface:#FFFEFA; --inset:#F8F5EC; --ink:#292820; --muted:#666257; --border:#E8E3D8; --editorial:Georgia,"Times New Roman",serif; --reading:Arial,Helvetica,sans-serif; }
+    *,*::before,*::after { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; min-width:280px; background:var(--background); color:var(--ink); font-family:var(--reading); -webkit-text-size-adjust:100%; }
+    .shell { width:calc(100% - 48px); max-width:1120px; margin-inline:auto; }
+    .site-header { display:flex; justify-content:space-between; align-items:center; gap:24px; padding-block:24px; border-bottom:1px solid var(--border); }
+    .logo { margin:0; font:700 32px/40px var(--editorial); letter-spacing:-.025em; }
+    .dot { color:var(--accent); }
+    .tagline,.label { margin:0; color:var(--muted); font-size:12px; line-height:16px; font-weight:700; letter-spacing:1px; }
+    .hero { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:64px; align-items:start; padding-block:64px; }
+    .kicker { display:inline-block; padding:8px 12px; background:var(--accent); color:var(--ink); margin:0 0 24px; font-size:12px; line-height:16px; font-weight:700; letter-spacing:1px; }
+    h1 { margin:0; font:400 clamp(40px,4.8vw,60px)/1.12 var(--editorial); letter-spacing:-1px; }
+    h1 span { display:block; }
+    .lead { margin:24px 0 0; max-width:43ch; font-size:17px; line-height:28px; }
+    .signup { margin-top:32px; max-width:440px; }
+    .signup label { display:block; margin-bottom:8px; font-size:14px; line-height:20px; font-weight:700; }
+    input { width:100%; min-height:52px; border:1px solid var(--ink); border-radius:0; padding:12px 16px; background:var(--surface); color:var(--ink); font:400 17px/26px var(--reading); }
+    input::placeholder { color:var(--muted); opacity:1; }
+    button { width:100%; min-height:48px; margin-top:16px; border:1px solid var(--accent); border-radius:0; padding:12px 20px; background:var(--accent); color:var(--ink); font:700 16px/24px var(--reading); cursor:pointer; }
+    button:hover { text-decoration:underline; text-underline-offset:3px; }
+    button:active { border-color:var(--ink); }
+    button:disabled { cursor:wait; opacity:.7; }
+    :focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+    .form-help,.form-status { margin:12px 0 0; font-size:14px; line-height:20px; color:var(--muted); }
+    .form-status { color:var(--ink); font-weight:700; }
+    .form-status[hidden] { display:none; }
+    .sample { padding-top:8px; }
+    .sample > figcaption { margin-bottom:16px; font-size:14px; line-height:20px; color:var(--muted); }
+    figure { margin:0; }
+    .word-card { background:var(--surface); }
+    .card-header { padding:24px 32px; border-bottom:1px solid var(--border); }
+    .card-logo { font-size:24px; line-height:32px; }
+    .card-content { padding:32px; }
+    .card-content .kicker { margin-bottom:24px; }
+    .word { margin:0; font:400 48px/56px var(--editorial); letter-spacing:-1px; }
+    .rule { width:36px; height:3px; margin:24px 0 32px; background:var(--accent); }
+    .definition { padding:24px; background:var(--inset); }
+    .definition p { margin:12px 0 0; font-size:17px; line-height:28px; }
+    .context { margin-top:32px; }
+    blockquote { margin:16px 0 0; border-left:3px solid var(--accent); padding-left:20px; }
+    blockquote p { margin:0; font:italic 18px/30px var(--editorial); }
+    .card-footer { padding:16px 32px; border-top:1px solid var(--border); color:var(--muted); font-size:14px; line-height:20px; }
+    .site-footer { display:flex; justify-content:space-between; align-items:center; gap:24px; border-top:1px solid var(--border); padding-block:24px 32px; }
+    .signoff { margin:0; font:400 24px/32px var(--editorial); }
+    .footer-note { margin:0; color:var(--muted); font-size:14px; line-height:20px; }
+    @media(max-width:900px) { .hero { gap:32px; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding-block:48px; } .card-content,.card-header { padding:24px; } .definition { padding:20px; } }
+    @media(max-width:767px) { .hero { grid-template-columns:1fr; gap:48px; } .signup { max-width:100%; } .lead { max-width:55ch; } .sample { max-width:600px; padding-top:0; } h1 { font-size:48px; line-height:56px; } .site-footer { align-items:flex-start; flex-direction:column; gap:8px; } }
+    @media(max-width:479px) { .shell { width:calc(100% - 32px); } .site-header { flex-direction:column; align-items:flex-start; gap:8px; } .hero { padding-block:40px; } h1 { font-size:40px; line-height:48px; } .word { font-size:40px; line-height:48px; } .definition { padding:24px; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <header class="site-header shell">
+    <p class="logo" aria-label="Verbose">verbose<span class="dot" aria-hidden="true">.</span></p>
+    <p class="tagline">PORTUGUÊS EM DOSE DIÁRIA</p>
+  </header>
+  <main class="shell">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <p class="kicker">UM PEQUENO HÁBITO. MAIS REPERTÓRIO.</p>
+        <h1 id="hero-title"><span>Uma palavra nova.</span><span>Todo dia, às 7h.</span></h1>
+        <p class="lead">Significado, exemplo de uso e uma palavra a mais no seu vocabulário. Direto no seu e-mail, todas as manhãs.</p>
+        <form class="signup" id="formulario-inscricao" novalidate>
+          <label for="email">Seu e-mail</label>
+          <input type="email" id="email" name="email" placeholder="voce@exemplo.com" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required aria-describedby="ajuda-formulario status-formulario">
+          <button type="submit" id="botao-inscricao">Quero receber a palavra do dia</button>
+          <p class="form-help" id="ajuda-formulario">Você confirma seu e-mail antes de começar. Pode cancelar quando quiser.</p>
+          <p class="form-status" id="status-formulario" role="status" aria-live="polite" hidden></p>
+        </form>
+      </div>
+      <figure class="sample">
+        <figcaption>Um gostinho do que chega na sua caixa de entrada.</figcaption>
+        <article class="word-card" aria-labelledby="sample-word">
+          <header class="card-header"><p class="logo card-logo" aria-label="Verbose">verbose<span class="dot" aria-hidden="true">.</span></p></header>
+          <div class="card-content">
+            <p class="kicker">A PALAVRA DE HOJE</p>
+            <h2 class="word" id="sample-word">esmero</h2>
+            <div class="rule" aria-hidden="true"></div>
+            <section class="definition" aria-labelledby="definition-title"><h3 class="label" id="definition-title">SIGNIFICADO</h3><p>Cuidado atento e dedicado ao fazer algo.</p></section>
+            <section class="context" aria-labelledby="context-title"><h3 class="label" id="context-title">EM CONTEXTO</h3><blockquote><p>“Ela preparou cada detalhe com esmero.”</p></blockquote></section>
+          </div>
+          <footer class="card-footer">Uma amostra do Verbose.</footer>
+        </article>
+      </figure>
+    </section>
+  </main>
+  <footer class="site-footer shell"><p class="signoff">Até a próxima palavra<span class="dot" aria-hidden="true">.</span></p><p class="footer-note">verbose. Sua dose diária de vocabulário.</p></footer>
+  <script>
+    const formulario = document.getElementById('formulario-inscricao');
+    const email = document.getElementById('email');
+    const botao = document.getElementById('botao-inscricao');
+    const status = document.getElementById('status-formulario');
+
+    function exibirStatus(mensagem) {
+      status.textContent = mensagem;
+      status.hidden = false;
+    }
+
+    formulario.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+
+      if (!email.checkValidity()) {
+        exibirStatus('Informe um e-mail válido.');
+        email.focus();
+        return;
+      }
+
+      botao.disabled = true;
+      exibirStatus('Enviando sua solicitação...');
+
+      try {
+        const resposta = await fetch('/api/inscricoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.value })
+        });
+
+        if (resposta.status === 429) {
+          exibirStatus('Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.');
+          return;
+        }
+
+        if (!resposta.ok) {
+          exibirStatus('Não foi possível concluir sua inscrição. Verifique o e-mail e tente novamente.');
+          return;
+        }
+
+        formulario.reset();
+        exibirStatus('Se este e-mail puder ser inscrito, você receberá uma mensagem de confirmação.');
+      } catch {
+        exibirStatus('Não foi possível conectar ao Verbose. Tente novamente em instantes.');
+      } finally {
+        botao.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
