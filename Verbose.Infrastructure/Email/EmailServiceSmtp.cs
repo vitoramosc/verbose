@@ -8,24 +8,60 @@ namespace Verbose.Infrastructure.Email;
 
 public sealed class EmailServiceSmtp(
     OpcoesDeEmail opcoes,
-    GeradorDeHtmlDaPalavraDoDia geradorDeHtml) : IEmailService
+    GeradorDeHtmlDaPalavraDoDia geradorDeHtml,
+    GeradorDeHtmlDeConfirmacaoDeInscricao geradorDeHtmlDeConfirmacao) : IEmailService
 {
     public async Task EnviarPalavraDoDiaAsync(
         RegistroPalavraDoDia registro,
+        string destinatario,
+        Uri linkDeCancelamento,
         CancellationToken tokenCancelamento = default)
     {
         ArgumentNullException.ThrowIfNull(registro);
 
         var mensagem = new MimeMessage();
         mensagem.From.Add(MailboxAddress.Parse(opcoes.Remetente));
-        mensagem.To.Add(MailboxAddress.Parse(opcoes.Destinatario));
+        mensagem.To.Add(MailboxAddress.Parse(destinatario));
         mensagem.Subject = $"Verbose — {registro.PalavraDoDia.Palavra}";
         mensagem.Body = new BodyBuilder
         {
-            HtmlBody = geradorDeHtml.Gerar(registro),
-            TextBody = CriarTextoAlternativo(registro)
+            HtmlBody = geradorDeHtml.Gerar(registro, linkDeCancelamento),
+            TextBody = CriarTextoAlternativo(registro, linkDeCancelamento)
         }.ToMessageBody();
 
+        await EnviarAsync(mensagem, tokenCancelamento);
+    }
+
+    public async Task EnviarConfirmacaoDeInscricaoAsync(
+        string email,
+        Uri linkDeConfirmacao,
+        CancellationToken tokenCancelamento = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
+        ArgumentNullException.ThrowIfNull(linkDeConfirmacao);
+
+        var mensagem = new MimeMessage();
+        mensagem.From.Add(MailboxAddress.Parse(opcoes.Remetente));
+        mensagem.To.Add(MailboxAddress.Parse(email));
+        mensagem.Subject = "Confirme sua inscrição no Verbose";
+        mensagem.Body = new BodyBuilder
+        {
+            HtmlBody = geradorDeHtmlDeConfirmacao.Gerar(linkDeConfirmacao),
+            TextBody = $"""
+                Confirme sua inscrição no Verbose
+
+                Para receber uma palavra nova por dia, acesse o link abaixo:
+                {linkDeConfirmacao.AbsoluteUri}
+
+                Se você não solicitou esta inscrição, ignore esta mensagem.
+                """
+        }.ToMessageBody();
+
+        await EnviarAsync(mensagem, tokenCancelamento);
+    }
+
+    private async Task EnviarAsync(MimeMessage mensagem, CancellationToken tokenCancelamento)
+    {
         using var cliente = new SmtpClient();
         await cliente.ConnectAsync(
             opcoes.Servidor,
@@ -50,7 +86,7 @@ public sealed class EmailServiceSmtp(
         await cliente.DisconnectAsync(quit: true, tokenCancelamento);
     }
 
-    private static string CriarTextoAlternativo(RegistroPalavraDoDia registro)
+    private static string CriarTextoAlternativo(RegistroPalavraDoDia registro, Uri linkDeCancelamento)
     {
         return $"""
             Verbose — A palavra de hoje
@@ -62,6 +98,9 @@ public sealed class EmailServiceSmtp(
             Em contexto: {registro.PalavraDoDia.Exemplo}
 
             Edição de {registro.DataReferencia:dd/MM/yyyy}
+
+            Para cancelar sua inscrição, acesse:
+            {linkDeCancelamento.AbsoluteUri}
             """;
     }
 }

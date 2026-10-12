@@ -27,9 +27,10 @@ public sealed class GeradorDeHtmlDaPalavraDoDia
         this.template = template;
     }
 
-    public string Gerar(RegistroPalavraDoDia registro)
+    public string Gerar(RegistroPalavraDoDia registro, Uri linkDeCancelamento)
     {
         ArgumentNullException.ThrowIfNull(registro);
+        ArgumentNullException.ThrowIfNull(linkDeCancelamento);
 
         return template
             .Replace("{{PALAVRA}}", Codificar(registro.PalavraDoDia.Palavra), StringComparison.Ordinal)
@@ -38,7 +39,8 @@ public sealed class GeradorDeHtmlDaPalavraDoDia
             .Replace(
                 "{{data}}",
                 Codificar(registro.DataReferencia.ToString("d 'de' MMMM 'de' yyyy", CultureInfo.GetCultureInfo("pt-BR"))),
-                StringComparison.Ordinal);
+                StringComparison.Ordinal)
+            .Replace("{{LINK_CANCELAMENTO}}", Codificar(linkDeCancelamento.AbsoluteUri), StringComparison.Ordinal);
     }
 
     private static string CarregarTemplateIncorporado()

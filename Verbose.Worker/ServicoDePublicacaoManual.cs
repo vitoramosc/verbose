@@ -34,7 +34,7 @@ public sealed class ServicoDePublicacaoManual(
         {
             await publicadorDeTeste.PublicarMensagemInvalidaParaTesteAsync(tokenCancelamento);
             logger.LogWarning("Mensagem JSON inválida publicada exclusivamente para teste da DLQ.");
-            cicloDeVidaDaAplicacao.StopApplication();
+            EncerrarAposInicializacaoDaAplicacao();
             return;
         }
 
@@ -57,11 +57,16 @@ public sealed class ServicoDePublicacaoManual(
             "Publicação manual concluída para {DataReferencia}.",
             dataReferencia);
 
-        cicloDeVidaDaAplicacao.StopApplication();
+        EncerrarAposInicializacaoDaAplicacao();
     }
 
     public Task StopAsync(CancellationToken tokenCancelamento)
     {
         return Task.CompletedTask;
+    }
+
+    private void EncerrarAposInicializacaoDaAplicacao()
+    {
+        cicloDeVidaDaAplicacao.ApplicationStarted.Register(cicloDeVidaDaAplicacao.StopApplication);
     }
 }

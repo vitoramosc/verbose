@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Email/Recursos/palavra_do_dia_template.html" />
+    <EmbeddedResource Include="Email/Recursos/confirmacao_inscricao_template.html" />
   </ItemGroup>
 
   <PropertyGroup>

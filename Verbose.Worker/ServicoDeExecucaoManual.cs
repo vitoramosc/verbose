@@ -53,7 +53,7 @@ public sealed class ServicoDeExecucaoManual(
             dataReferencia,
             resultado);
 
-        cicloDeVidaDaAplicacao.StopApplication();
+        cicloDeVidaDaAplicacao.ApplicationStarted.Register(cicloDeVidaDaAplicacao.StopApplication);
     }
 
     public Task StopAsync(CancellationToken tokenCancelamento)

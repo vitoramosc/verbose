@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sua inscrição no Verbose foi cancelada.">
+  <title>Inscrição cancelada — Verbose</title>
+  <style>
+    :root { --accent:#EBD16A; --background:#F3F0E7; --surface:#FFFEFA; --inset:#F8F5EC; --ink:#292820; --muted:#666257; --border:#E8E3D8; --editorial:Georgia, "Times New Roman", serif; --reading:Arial, Helvetica, sans-serif; }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; min-height:100svh; padding:48px 16px; display:grid; place-items:center; background:var(--background); color:var(--ink); font-family:var(--reading); -webkit-text-size-adjust:100%; }
+    .page { width:100%; max-width:720px; background:var(--surface); }
+    .brand-header { display:flex; justify-content:space-between; align-items:center; gap:24px; padding:24px 40px; border-bottom:1px solid var(--border); }
+    .logo { margin:0; font:700 32px/40px var(--editorial); letter-spacing:-0.025em; }
+    .logo-dot { color:var(--accent); }
+    .tagline { margin:0; color:var(--muted); font-size:12px; font-weight:700; line-height:16px; letter-spacing:1px; }
+    .cancellation { padding:48px 40px 40px; }
+    .status { display:inline-flex; align-items:center; gap:8px; margin:0 0 24px; padding:8px 12px; background:var(--accent); font-size:12px; line-height:16px; font-weight:700; letter-spacing:1px; }
+    .status svg { width:16px; height:16px; flex:none; }
+    h1 { margin:0; font:400 48px/1.17 var(--editorial); letter-spacing:-1px; overflow-wrap:anywhere; }
+    .editorial-rule { width:36px; height:3px; margin:24px 0 32px; background:var(--accent); }
+    .intro { margin:0; max-width:55ch; font-size:17px; line-height:28px; }
+    .farewell { margin-top:32px; padding:24px; background:var(--inset); }
+    .farewell p { margin:0; font-size:17px; line-height:28px; }
+    .closing { margin:32px 0 0; font:italic 18px/30px var(--editorial); }
+    .page-footer { padding:24px 40px; border-top:1px solid var(--border); }
+    .page-footer p { margin:0; color:var(--muted); font-size:14px; line-height:20px; }
+    @media (max-width:600px) { body { padding:24px 16px; } .brand-header { padding:24px; flex-direction:column; align-items:flex-start; gap:8px; } .cancellation { padding:40px 24px 32px; } h1 { font-size:40px; line-height:48px; } .page-footer { padding:24px; } }
+    @media (max-width:360px) { h1 { font-size:32px; line-height:40px; } }
+  </style>
+</head>
+<body>
+  <main class="page" aria-labelledby="cancellation-title">
+    <header class="brand-header">
+      <p class="logo" aria-label="Verbose">verbose<span class="logo-dot" aria-hidden="true">.</span></p>
+      <p class="tagline">PORTUGUÊS EM DOSE DIÁRIA</p>
+    </header>
+    <article class="cancellation">
+      <p class="status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 12 4 4 10-10"/></svg>
+        INSCRIÇÃO CANCELADA
+      </p>
+      <h1 id="cancellation-title">Inscrição cancelada.</h1>
+      <div class="editorial-rule" aria-hidden="true"></div>
+      <p class="intro">Tudo certo. Sua inscrição foi cancelada e você não receberá mais os e-mails diários do Verbose.</p>
+      <aside class="farewell" aria-label="Até a próxima"><p>Obrigado por passar por aqui. Se quiser voltar, o Verbose continua de portas abertas.</p></aside>
+      <p class="closing">Até a próxima palavra.</p>
+    </article>
+    <footer class="page-footer"><p>Tudo certo por aqui. Você já pode fechar esta página.</p></footer>
+  </main>
+</body>
+</html>
